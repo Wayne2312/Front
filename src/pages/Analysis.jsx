@@ -9,7 +9,7 @@ import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Toolti
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
 const Analysis = () => {
-  const { user, token, error: authError, logout } = useContext(AuthContext);
+  const { user, token, error: authError, logout, verifyToken } = useContext(AuthContext);
   const [analysis, setAnalysis] = useState({ habits: [], trends: { labels: [], data: {} } });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -23,9 +23,9 @@ const Analysis = () => {
       navigate("/login");
       return;
     }
-    console.log("Analysis: Fetching analysis");
+    verifyToken(navigate);
     fetchAnalysis();
-  }, [user, token, navigate]);
+  }, [user, token, navigate, verifyToken]);
 
   const fetchAnalysis = async () => {
     setLoading(true);
@@ -43,7 +43,7 @@ const Analysis = () => {
       setError(message);
       if (err.response?.status === 401 || err.response?.status === 403) {
         console.log("Analysis: Unauthorized, logging out");
-        logout();
+        logout(navigate);
       }
     } finally {
       setLoading(false);
@@ -82,7 +82,7 @@ const Analysis = () => {
         <Link to="/dashboard" className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600">
           Back to Dashboard
         </Link>
-        <button onClick={logout} className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600">
+        <button onClick={() => logout(navigate)} className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600">
           Logout
         </button>
       </div>
