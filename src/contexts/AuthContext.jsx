@@ -92,6 +92,12 @@ export const AuthProvider = ({ children }) => {
   };
 
   const verifyToken = async (navigate) => {
+    if (!token) {
+      console.log("AuthContext: No token, redirecting to login");
+      setError("Please log in to continue");
+      navigate("/login");
+      return;
+    }
     try {
       console.log("AuthContext: Verifying token with GET /api/habits");
       await axios.get(`${import.meta.env.VITE_API_URL}/habits`, {
