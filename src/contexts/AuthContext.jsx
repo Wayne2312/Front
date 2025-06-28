@@ -1,6 +1,5 @@
 import { createContext, useState, useEffect } from "react";
 import axios from "axios";
-import { useNavigate } from "react-router-dom";
 
 const AuthContext = createContext();
 
@@ -8,23 +7,20 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(JSON.parse(localStorage.getItem("user")) || null);
   const [token, setToken] = useState(localStorage.getItem("token") || null);
   const [error, setError] = useState("");
-  const navigate = useNavigate();
 
   useEffect(() => {
     console.log("AuthContext: Token state:", token);
     if (token) {
       console.log("AuthContext: Setting axios Authorization header:", `Bearer ${token}`);
       axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
-      verifyToken();
     } else {
       console.log("AuthContext: No token, removing Authorization header");
       delete axios.defaults.headers.common["Authorization"];
       setUser(null);
       localStorage.removeItem("user");
       setError("Please log in to continue");
-      navigate("/login");
     }
-  }, [token, navigate]);
+  }, [token]);
 
   axios.interceptors.request.use(
     (config) => {
@@ -40,25 +36,7 @@ export const AuthProvider = ({ children }) => {
     }
   );
 
-  const verifyToken = async () => {
-    try {
-      console.log("AuthContext: Verifying token with GET /api/habits");
-      await axios.get(`${import.meta.env.VITE_API_URL}/habits`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      console.log("AuthContext: Token verified successfully");
-      setError("");
-    } catch (err) {
-      console.error("AuthContext: Token verification failed:", err.response?.data || err.message);
-      if (err.response?.status === 401 || err.response?.status === 403) {
-        console.log("AuthContext: Unauthorized, logging out");
-        logout();
-      }
-      setError("Session expired, please log in again");
-    }
-  };
-
-  const login = async (identifier, password) => {
+  const login = async (identifier, password, navigate) => {
     try {
       console.log("AuthContext: Logging in with identifier:", identifier);
       const response = await axios.post(`${import.meta.env.VITE_API_URL}/login`, { identifier, password });
@@ -80,7 +58,7 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const register = async (username, email, password) => {
+  const register = async (username, email, password, navigate) => {
     try {
       console.log("AuthContext: Registering user:", username);
       const response = await axios.post(`${import.meta.env.VITE_API_URL}/register`, { username, email, password });
@@ -102,7 +80,7 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const logout = () => {
+  const logout = (navigate) => {
     console.log("AuthContext: Logging out user");
     setToken(null);
     setUser(null);
@@ -113,8 +91,26 @@ export const AuthProvider = ({ children }) => {
     navigate("/login");
   };
 
+  const verifyToken = async (navigate) => {
+    try {
+      console.log("AuthContext: Verifying token with GET /api/habits");
+      await axios.get(`${import.meta.env.VITE_API_URL}/habits`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      console.log("AuthContext: Token verified successfully");
+      setError("");
+    } catch (err) {
+      console.error("AuthContext: Token verification failed:", err.response?.data || err.message);
+      if (err.response?.status === 401 || err.response?.status === 403) {
+        console.log("AuthContext: Unauthorized, logging out");
+        logout(navigate);
+      }
+      setError("Session expired, please log in again");
+    }
+  };
+
   return (
-    <AuthContext.Provider value={{ user, token, login, register, logout, error }}>
+    <AuthContext.Provider value={{ user, token, login, register, logout, error, verifyToken }}>
       {children}
     </AuthContext.Provider>
   );
