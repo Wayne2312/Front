@@ -1,6 +1,6 @@
 import { useState, useEffect, useContext } from "react";
 import { Helmet } from "react-helmet-async";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import AuthContext from "../contexts/AuthContext";
 import { motion, AnimatePresence } from "framer-motion";
@@ -11,17 +11,19 @@ const Dashboard = () => {
   const [newHabit, setNewHabit] = useState({ name: "", description: "", frequency: "daily" });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     console.log("Dashboard: User:", user, "Token:", token);
-    if (user && token) {
-      console.log("Dashboard: Fetching habits");
-      fetchHabits();
-    } else {
-      console.log("Dashboard: No user or token, prompting login");
+    if (!user || !token) {
+      console.log("Dashboard: No user or token, redirecting to login");
       setError("Please log in to view habits");
+      navigate("/login");
+      return;
     }
-  }, [user, token]);
+    console.log("Dashboard: Fetching habits");
+    fetchHabits();
+  }, [user, token, navigate]);
 
   const fetchHabits = async () => {
     setLoading(true);
@@ -40,6 +42,7 @@ const Dashboard = () => {
       if (err.response?.status === 401 || err.response?.status === 403) {
         console.log("Dashboard: Unauthorized, logging out");
         logout();
+        navigate("/login");
       }
     } finally {
       setLoading(false);
@@ -73,6 +76,7 @@ const Dashboard = () => {
       if (err.response?.status === 401 || err.response?.status === 403) {
         console.log("Dashboard: Unauthorized, logging out");
         logout();
+        navigate("/login");
       }
     } finally {
       setLoading(false);
