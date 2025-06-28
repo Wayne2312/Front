@@ -1,24 +1,24 @@
-import { useState, useEffect, useContext } from "react";
-import { Helmet } from "react-helmet-async";
-import { Link, useNavigate } from "react-router-dom";
-import axios from "axios";
-import AuthContext from "../contexts/AuthContext";
-import { motion, AnimatePresence } from "framer-motion";
+import { useState, useEffect, useContext } from 'react';
+import { Helmet } from 'react-helmet-async';
+import { Link, useNavigate } from 'react-router-dom';
+import axios from 'axios';
+import AuthContext from '../contexts/AuthContext';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const Dashboard = () => {
   const { user, token, error: authError, logout, verifyToken } = useContext(AuthContext);
   const [habits, setHabits] = useState([]);
-  const [newHabit, setNewHabit] = useState({ name: "", description: "", frequency: "daily" });
-  const [error, setError] = useState("");
+  const [newHabit, setNewHabit] = useState({ name: '', description: '', frequency: 'daily' });
+  const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
-    console.log("Dashboard: User:", user, "Token:", token);
+    console.log('Dashboard: User:', user, 'Token:', token);
     if (!user || !token) {
-      console.log("Dashboard: No user or token, redirecting to login");
-      setError("Please log in to view habits");
-      navigate("/login");
+      console.log('Dashboard: No user or token, redirecting to login');
+      setError('Please log in to view habits');
+      navigate('/login');
       return;
     }
     verifyToken(navigate);
@@ -28,19 +28,18 @@ const Dashboard = () => {
   const fetchHabits = async () => {
     setLoading(true);
     try {
-      console.log("Dashboard: Sending GET /api/habits with token:", token);
+      console.log('Dashboard: Fetching habits');
       const response = await axios.get(`${import.meta.env.VITE_API_URL}/habits`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      console.log("Dashboard: Habits fetched:", response.data);
+      console.log('Dashboard: Habits fetched:', response.data);
       setHabits(response.data || []);
-      setError("");
+      setError('');
     } catch (err) {
-      const message = err.response?.data?.message || "Failed to fetch habits";
-      console.error("Dashboard: Fetch habits error:", err.response?.data || err.message);
+      const message = err.response?.data?.message || 'Failed to fetch habits';
+      console.error('Dashboard: Fetch error:', err.response?.data || err.message);
       setError(message);
       if (err.response?.status === 401 || err.response?.status === 403) {
-        console.log("Dashboard: Unauthorized, logging out");
         logout(navigate);
       }
     } finally {
@@ -50,7 +49,7 @@ const Dashboard = () => {
 
   const handleCreateHabit = async () => {
     if (!newHabit.name.trim()) {
-      setError("Habit name is required");
+      setError('Habit name is required');
       return;
     }
     setLoading(true);
@@ -60,20 +59,19 @@ const Dashboard = () => {
         description: newHabit.description.trim(),
         frequency: newHabit.frequency.toLowerCase(),
       };
-      console.log("Dashboard: Sending POST /api/habits with payload:", payload, "token:", token);
+      console.log('Dashboard: Creating habit:', payload);
       const response = await axios.post(`${import.meta.env.VITE_API_URL}/habits`, payload, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      console.log("Dashboard: Habit created:", response.data);
-      setNewHabit({ name: "", description: "", frequency: "daily" });
-      setError("");
+      console.log('Dashboard: Habit created:', response.data);
+      setNewHabit({ name: '', description: '', frequency: 'daily' });
+      setError('');
       fetchHabits();
     } catch (err) {
-      const message = err.response?.data?.message || "Failed to create habit";
-      console.error("Dashboard: Create habit error:", err.response?.data || err.message);
+      const message = err.response?.data?.message || 'Failed to create habit';
+      console.error('Dashboard: Create error:', err.response?.data || err.message);
       setError(message);
       if (err.response?.status === 401 || err.response?.status === 403) {
-        console.log("Dashboard: Unauthorized, logging out");
         logout(navigate);
       }
     } finally {
@@ -84,11 +82,11 @@ const Dashboard = () => {
   return (
     <section className="container mx-auto p-4">
       <Helmet>
-        <title>Dashboard - Personal Habit Tracker</title>
+        <title>Dashboard - Habit Tracker</title>
         <meta name="description" content="Manage your habits and track streaks." />
       </Helmet>
       <h2 className="text-3xl font-bold mb-6 text-center">
-        Welcome, {user?.username || "User"}!
+        Welcome, {user?.username || 'User'}!
       </h2>
       {(error || authError) && (
         <p className="text-red-500 mb-4 text-center">{error || authError}</p>
@@ -152,7 +150,7 @@ const Dashboard = () => {
               transition={{ duration: 0.3 }}
             >
               <h4 className="text-lg font-semibold mb-2">{habit.name}</h4>
-              <p className="text-gray-500 mb-2">{habit.description || "No description"}</p>
+              <p className="text-gray-500 mb-2">{habit.description || 'No description'}</p>
               <p className="text-gray-500 mb-2">Frequency: {habit.frequency}</p>
               <p className="text-orange-500 font-bold mb-4">Streak: {habit.streak || 0}</p>
             </motion.article>
