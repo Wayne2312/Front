@@ -6,7 +6,7 @@ import AuthContext from "../contexts/AuthContext";
 import { motion, AnimatePresence } from "framer-motion";
 
 const Dashboard = () => {
-  const { user, token, error: authError, logout } = useContext(AuthContext);
+  const { user, token, error: authError, logout, verifyToken } = useContext(AuthContext);
   const [habits, setHabits] = useState([]);
   const [newHabit, setNewHabit] = useState({ name: "", description: "", frequency: "daily" });
   const [error, setError] = useState("");
@@ -21,9 +21,9 @@ const Dashboard = () => {
       navigate("/login");
       return;
     }
-    console.log("Dashboard: Fetching habits");
+    verifyToken(navigate);
     fetchHabits();
-  }, [user, token, navigate]);
+  }, [user, token, navigate, verifyToken]);
 
   const fetchHabits = async () => {
     setLoading(true);
@@ -41,7 +41,7 @@ const Dashboard = () => {
       setError(message);
       if (err.response?.status === 401 || err.response?.status === 403) {
         console.log("Dashboard: Unauthorized, logging out");
-        logout();
+        logout(navigate);
       }
     } finally {
       setLoading(false);
@@ -74,7 +74,7 @@ const Dashboard = () => {
       setError(message);
       if (err.response?.status === 401 || err.response?.status === 403) {
         console.log("Dashboard: Unauthorized, logging out");
-        logout();
+        logout(navigate);
       }
     } finally {
       setLoading(false);
@@ -98,7 +98,7 @@ const Dashboard = () => {
         <Link to="/analysis" className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600">
           View Analysis
         </Link>
-        <button onClick={logout} className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600">
+        <button onClick={() => logout(navigate)} className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600">
           Logout
         </button>
       </div>
