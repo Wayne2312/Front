@@ -10,6 +10,7 @@ class ErrorBoundary extends Component {
   state = { error: null };
 
   static getDerivedStateFromError(error) {
+    console.error('ErrorBoundary: Caught error:', error);
     return { error };
   }
 
@@ -22,15 +23,23 @@ class ErrorBoundary extends Component {
         </div>
       );
     }
+    console.log('ErrorBoundary: Rendering children');
     return this.props.children;
   }
 }
 
+function DebugComponent() {
+  console.log('DebugComponent: App component tree rendering');
+  return null;
+}
+
 function App() {
+  console.log('App: Rendering with Router and AuthProvider');
   return (
     <ErrorBoundary>
       <AuthProvider>
         <Router>
+          <DebugComponent />
           <Routes>
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
