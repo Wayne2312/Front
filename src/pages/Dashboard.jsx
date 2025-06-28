@@ -14,80 +14,152 @@ const Dashboard = () => {
   const [error, setError] = useState("");
 
   useEffect(() => {
-    fetchHabits();
-  }, []);
+    if (user && localStorage.getItem("token")) {
+      fetchHabits();
+    }
+  }, [user]);
 
   const fetchHabits = async () => {
     try {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        setError("Please log in to view habits");
+        return;
+      }
       const response = await axios.get(`${import.meta.env.VITE_API_URL}/habits`, {
-        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` }
+        headers: { Authorization: `Bearer ${token}` },
       });
-      setHabits(response.data);
+      setHabits(response.data || []);
+      setError("");
     } catch (err) {
+      const message = err.response?.data?.message || "Failed to fetch habits";
       console.error("Fetch habits error:", err.response?.data || err.message);
-      setError(err.response?.data?.message || "Failed to fetch habits");
+      setError(message);
+      if (message.includes("Token")) {
+        localStorage.removeItem("token");
+      }
     }
   };
 
   const handleCreateHabit = async () => {
     try {
-      await axios.post(`${import.meta.env.VITE_API_URL}/habits`, newHabit, {
-        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` }
+      const token = localStorage.getItem("token");
+      if (!token) {
+        setError("Please log in to create a habit");
+        return;
+      }
+      const payload = {
+        name: newHabit.name,
+        description: newHabit.description,
+        frequency: newHabit.frequency.toLowerCase(), // Ensure lowercase
+      };
+      await axios.post(`${import.meta.env.VITE_API_URL}/habits`, payload, {
+        headers: { Authorization: `Bearer ${token}` },
       });
       setNewHabit({ name: "", description: "", frequency: "daily" });
+      setError("");
       fetchHabits();
     } catch (err) {
+      const message = err.response?.data?.message || "Failed to create habit";
       console.error("Create habit error:", err.response?.data || err.message);
-      setError(err.response?.data?.message || "Failed to create habit");
+      setError(message);
+      if (message.includes("Token")) {
+        localStorage.removeItem("token");
+      }
     }
   };
 
   const handleUpdateHabit = async () => {
     try {
-      await axios.put(`${import.meta.env.VITE_API_URL}/habits/${editingHabit.id}`, editingHabit, {
-        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` }
+      const token = localStorage.getItem("token");
+      if (!token) {
+        setError("Please log in to update a habit");
+        return;
+      }
+      const payload = {
+        name: editingHabit.name,
+        description: editingHabit.description,
+        frequency: editingHabit.frequency.toLowerCase(), // Ensure lowercase
+      };
+      await axios.put(`${import.meta.env.VITE_API_URL}/habits/${editingHabit.id}`, payload, {
+        headers: { Authorization: `Bearer ${token}` },
       });
       setEditingHabit(null);
+      setError("");
       fetchHabits();
     } catch (err) {
+      const message = err.response?.data?.message || "Failed to update habit";
       console.error("Update habit error:", err.response?.data || err.message);
-      setError(err.response?.data?.message || "Failed to update habit");
+      setError(message);
+      if (message.includes("Token")) {
+        localStorage.removeItem("token");
+      }
     }
   };
 
   const handleDeleteHabit = async (id) => {
     try {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        setError("Please log in to delete a habit");
+        return;
+      }
       await axios.delete(`${import.meta.env.VITE_API_URL}/habits/${id}`, {
-        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` }
+        headers: { Authorization: `Bearer ${token}` },
       });
+      setError("");
       fetchHabits();
     } catch (err) {
+      const message = err.response?.data?.message || "Failed to delete habit";
       console.error("Delete habit error:", err.response?.data || err.message);
-      setError(err.response?.data?.message || "Failed to delete habit");
+      setError(message);
+      if (message.includes("Token")) {
+        localStorage.removeItem("token");
+      }
     }
   };
 
   const handleLogActivity = async (id) => {
     try {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        setError("Please log in to log an activity");
+        return;
+      }
       await axios.post(`${import.meta.env.VITE_API_URL}/habits/${id}/log`, {}, {
-        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` }
+        headers: { Authorization: `Bearer ${token}` },
       });
+      setError("");
       fetchHabits();
     } catch (err) {
+      const message = err.response?.data?.message || "Failed to log activity";
       console.error("Log activity error:", err.response?.data || err.message);
-      setError(err.response?.data?.message || "Failed to log activity");
+      setError(message);
+      if (message.includes("Token")) {
+        localStorage.removeItem("token");
+      }
     }
   };
 
   const fetchHistory = async (id) => {
     try {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        setError("Please log in to view history");
+        return;
+      }
       const response = await axios.get(`${import.meta.env.VITE_API_URL}/habits/${id}/history`, {
-        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` }
+        headers: { Authorization: `Bearer ${token}` },
       });
       setHistory((prev) => ({ ...prev, [id]: response.data }));
+      setError("");
     } catch (err) {
+      const message = err.response?.data?.message || "Failed to fetch history";
       console.error("Fetch history error:", err.response?.data || err.message);
-      setError(err.response?.data?.message || "Failed to fetch history");
+      setError(message);
+      if (message.includes("Token")) {
+        localStorage.removeItem("token");
+      }
     }
   };
 
@@ -101,7 +173,7 @@ const Dashboard = () => {
         />
       </Helmet>
       <h2 className="text-3xl font-bold mb-6 text-center">
-        Welcome, {user.username}!
+        Welcome, {user?.username || "User"}!
       </h2>
       {error && <p className="text-red-500 mb-4 text-center">{error}</p>}
       <div className="flex justify-end mb-4">
@@ -161,70 +233,88 @@ const Dashboard = () => {
         >
           {editingHabit ? "Update Habit" : "Create Habit"}
         </button>
+        {editingHabit && (
+          <button
+            onClick={() => setEditingHabit(null)}
+            className="btn-secondary mt-2 w-full md:w-auto"
+            aria-label="Cancel edit"
+          >
+            Cancel
+          </button>
+        )}
       </div>
       <h3 className="text-2xl mb-4">Your Habits</h3>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {habits.map((habit) => (
-          <article key={habit.id} className="card">
-            <h4 className="text-lg mb-2">{habit.name}</h4>
-            <p className="text-warm-gray mb-2">{habit.description}</p>
-            <p className="text-warm-gray mb-2">Frequency: {habit.frequency}</p>
-            <p className="text-soft-orange font-bold mb-4">Streak: {habit.streak}</p>
-            <div className="flex flex-wrap gap-2">
-              <button
-                onClick={() => handleLogActivity(habit.id)}
-                className="btn-primary"
-                aria-label={`Log activity for ${habit.name}`}
-              >
-                Log Activity
-              </button>
-              <button
-                onClick={() => setEditingHabit(habit)}
-                className="btn-secondary"
-                aria-label={`Edit ${habit.name}`}
-              >
-                Edit
-              </button>
-              <button
-                onClick={() => handleDeleteHabit(habit.id)}
-                className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500"
-                aria-label={`Delete ${habit.name}`}
-              >
-                Delete
-              </button>
-            </div>
-            <button
-              onClick={() => fetchHistory(habit.id)}
-              className="mt-4 text-soft-orange hover:underline font-semibold"
-              aria-label={`View history for ${habit.name}`}
+        <AnimatePresence>
+          {habits.map((habit) => (
+            <motion.article
+              key={habit.id}
+              className="card"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 20 }}
+              transition={{ duration: 0.3 }}
             >
-              View History
-            </button>
-            <AnimatePresence>
-              {history[habit.id] && (
-                <motion.div
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -20 }}
-                  transition={{ duration: 0.3 }}
-                  className="mt-4 bg-warm-beige p-4 rounded-lg shadow-md"
+              <h4 className="text-lg mb-2">{habit.name}</h4>
+              <p className="text-warm-gray mb-2">{habit.description}</p>
+              <p className="text-warm-gray mb-2">Frequency: {habit.frequency}</p>
+              <p className="text-soft-orange font-bold mb-4">Streak: {habit.streak}</p>
+              <div className="flex flex-wrap gap-2">
+                <button
+                  onClick={() => handleLogActivity(habit.id)}
+                  className="btn-primary"
+                  aria-label={`Log activity for ${habit.name}`}
                 >
-                  <h5 className="text-lg font-semibold text-soft-orange mb-2">Activity History</h5>
-                  <ul className="text-sm text-warm-gray list-disc pl-5 space-y-2">
-                    {history[habit.id].map((activity) => (
-                      <li
-                        key={activity.id}
-                        className="hover:bg-soft-orange hover:text-white p-2 rounded transition-colors duration-200"
-                      >
-                        {new Date(activity.completed_at).toLocaleString()}
-                      </li>
-                    ))}
-                  </ul>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </article>
-        ))}
+                  Log Activity
+                </button>
+                <button
+                  onClick={() => setEditingHabit(habit)}
+                  className="btn-secondary"
+                  aria-label={`Edit ${habit.name}`}
+                >
+                  Edit
+                </button>
+                <button
+                  onClick={() => handleDeleteHabit(habit.id)}
+                  className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500"
+                  aria-label={`Delete ${habit.name}`}
+                >
+                  Delete
+                </button>
+              </div>
+              <button
+                onClick={() => fetchHistory(habit.id)}
+                className="mt-4 text-soft-orange hover:underline font-semibold"
+                aria-label={`View history for ${habit.name}`}
+              >
+                View History
+              </button>
+              <AnimatePresence>
+                {history[habit.id] && (
+                  <motion.div
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: -20 }}
+                    transition={{ duration: 0.3 }}
+                    className="mt-4 bg-warm-beige p-4 rounded-lg shadow-md"
+                  >
+                    <h5 className="text-lg font-semibold text-soft-orange mb-2">Activity History</h5>
+                    <ul className="text-sm text-warm-gray list-disc pl-5 space-y-2">
+                      {history[habit.id].map((activity) => (
+                        <li
+                          key={activity.id}
+                          className="hover:bg-soft-orange hover:text-white p-2 rounded transition-colors duration-200"
+                        >
+                          {new Date(activity.completed_at).toLocaleString()}
+                        </li>
+                      ))}
+                    </ul>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </motion.article>
+          ))}
+        </AnimatePresence>
       </div>
     </section>
   );
