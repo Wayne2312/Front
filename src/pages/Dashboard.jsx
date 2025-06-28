@@ -6,7 +6,7 @@ import AuthContext from "../contexts/AuthContext";
 import { motion, AnimatePresence } from "framer-motion";
 
 const Dashboard = () => {
-  const { user } = useContext(AuthContext);
+  const { user, token, error: authError, logout } = useContext(AuthContext);
   const [habits, setHabits] = useState([]);
   const [newHabit, setNewHabit] = useState({ name: "", description: "", frequency: "daily" });
   const [editingHabit, setEditingHabit] = useState(null);
@@ -14,18 +14,15 @@ const Dashboard = () => {
   const [error, setError] = useState("");
 
   useEffect(() => {
-    if (user && localStorage.getItem("token")) {
+    if (user && token) {
       fetchHabits();
+    } else {
+      setError("Please log in to view habits");
     }
-  }, [user]);
+  }, [user, token]);
 
   const fetchHabits = async () => {
     try {
-      const token = localStorage.getItem("token");
-      if (!token) {
-        setError("Please log in to view habits");
-        return;
-      }
       const response = await axios.get(`${import.meta.env.VITE_API_URL}/habits`, {
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -33,25 +30,24 @@ const Dashboard = () => {
       setError("");
     } catch (err) {
       const message = err.response?.data?.message || "Failed to fetch habits";
-      console.error("Fetch habits error:", err.response?.data || err.message);
       setError(message);
-      if (message.includes("Token")) {
-        localStorage.removeItem("token");
+      console.error("Fetch habits error:", err.response?.data || err.message);
+      if (err.response?.status === 401 || err.response?.status === 403) {
+        logout();
       }
     }
   };
 
   const handleCreateHabit = async () => {
+    if (!newHabit.name.trim()) {
+      setError("Habit name is required");
+      return;
+    }
     try {
-      const token = localStorage.getItem("token");
-      if (!token) {
-        setError("Please log in to create a habit");
-        return;
-      }
       const payload = {
-        name: newHabit.name,
-        description: newHabit.description,
-        frequency: newHabit.frequency.toLowerCase(), // Ensure lowercase
+        name: newHabit.name.trim(),
+        description: newHabit.description.trim(),
+        frequency: newHabit.frequency.toLowerCase(),
       };
       await axios.post(`${import.meta.env.VITE_API_URL}/habits`, payload, {
         headers: { Authorization: `Bearer ${token}` },
@@ -61,25 +57,24 @@ const Dashboard = () => {
       fetchHabits();
     } catch (err) {
       const message = err.response?.data?.message || "Failed to create habit";
-      console.error("Create habit error:", err.response?.data || err.message);
       setError(message);
-      if (message.includes("Token")) {
-        localStorage.removeItem("token");
+      console.error("Create habit error:", err.response?.data || err.message);
+      if (err.response?.status === 401 || err.response?.status === 403) {
+        logout();
       }
     }
   };
 
   const handleUpdateHabit = async () => {
+    if (!editingHabit.name.trim()) {
+      setError("Habit name is required");
+      return;
+    }
     try {
-      const token = localStorage.getItem("token");
-      if (!token) {
-        setError("Please log in to update a habit");
-        return;
-      }
       const payload = {
-        name: editingHabit.name,
-        description: editingHabit.description,
-        frequency: editingHabit.frequency.toLowerCase(), // Ensure lowercase
+        name: editingHabit.name.trim(),
+        description: editingHabit.description.trim(),
+        frequency: editingHabit.frequency.toLowerCase(),
       };
       await axios.put(`${import.meta.env.VITE_API_URL}/habits/${editingHabit.id}`, payload, {
         headers: { Authorization: `Bearer ${token}` },
@@ -89,21 +84,16 @@ const Dashboard = () => {
       fetchHabits();
     } catch (err) {
       const message = err.response?.data?.message || "Failed to update habit";
-      console.error("Update habit error:", err.response?.data || err.message);
       setError(message);
-      if (message.includes("Token")) {
-        localStorage.removeItem("token");
+      console.error("Update habit error:", err.response?.data || err.message);
+      if (err.response?.status === 401 || err.response?.status === 403) {
+        logout();
       }
     }
   };
 
   const handleDeleteHabit = async (id) => {
     try {
-      const token = localStorage.getItem("token");
-      if (!token) {
-        setError("Please log in to delete a habit");
-        return;
-      }
       await axios.delete(`${import.meta.env.VITE_API_URL}/habits/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -111,21 +101,16 @@ const Dashboard = () => {
       fetchHabits();
     } catch (err) {
       const message = err.response?.data?.message || "Failed to delete habit";
-      console.error("Delete habit error:", err.response?.data || err.message);
       setError(message);
-      if (message.includes("Token")) {
-        localStorage.removeItem("token");
+      console.error("Delete habit error:", err.response?.data || err.message);
+      if (err.response?.status === 401 || err.response?.status === 403) {
+        logout();
       }
     }
   };
 
   const handleLogActivity = async (id) => {
     try {
-      const token = localStorage.getItem("token");
-      if (!token) {
-        setError("Please log in to log an activity");
-        return;
-      }
       await axios.post(`${import.meta.env.VITE_API_URL}/habits/${id}/log`, {}, {
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -133,21 +118,16 @@ const Dashboard = () => {
       fetchHabits();
     } catch (err) {
       const message = err.response?.data?.message || "Failed to log activity";
-      console.error("Log activity error:", err.response?.data || err.message);
       setError(message);
-      if (message.includes("Token")) {
-        localStorage.removeItem("token");
+      console.error("Log activity error:", err.response?.data || err.message);
+      if (err.response?.status === 401 || err.response?.status === 403) {
+        logout();
       }
     }
   };
 
   const fetchHistory = async (id) => {
     try {
-      const token = localStorage.getItem("token");
-      if (!token) {
-        setError("Please log in to view history");
-        return;
-      }
       const response = await axios.get(`${import.meta.env.VITE_API_URL}/habits/${id}/history`, {
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -155,10 +135,10 @@ const Dashboard = () => {
       setError("");
     } catch (err) {
       const message = err.response?.data?.message || "Failed to fetch history";
-      console.error("Fetch history error:", err.response?.data || err.message);
       setError(message);
-      if (message.includes("Token")) {
-        localStorage.removeItem("token");
+      console.error("Fetch history error:", err.response?.data || err.message);
+      if (err.response?.status === 401 || err.response?.status === 403) {
+        logout();
       }
     }
   };
@@ -175,7 +155,9 @@ const Dashboard = () => {
       <h2 className="text-3xl font-bold mb-6 text-center">
         Welcome, {user?.username || "User"}!
       </h2>
-      {error && <p className="text-red-500 mb-4 text-center">{error}</p>}
+      {(error || authError) && (
+        <p className="text-red-500 mb-4 text-center">{error || authError}</p>
+      )}
       <div className="flex justify-end mb-4">
         <Link
           to="/analysis"
@@ -244,6 +226,9 @@ const Dashboard = () => {
         )}
       </div>
       <h3 className="text-2xl mb-4">Your Habits</h3>
+      {habits.length === 0 && !error && (
+        <p className="text-warm-gray text-center">No habits yet. Create one above!</p>
+      )}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         <AnimatePresence>
           {habits.map((habit) => (
@@ -256,9 +241,9 @@ const Dashboard = () => {
               transition={{ duration: 0.3 }}
             >
               <h4 className="text-lg mb-2">{habit.name}</h4>
-              <p className="text-warm-gray mb-2">{habit.description}</p>
+              <p className="text-warm-gray mb-2">{habit.description || "No description"}</p>
               <p className="text-warm-gray mb-2">Frequency: {habit.frequency}</p>
-              <p className="text-soft-orange font-bold mb-4">Streak: {habit.streak}</p>
+              <p className="text-soft-orange font-bold mb-4">Streak: {habit.streak || 0}</p>
               <div className="flex flex-wrap gap-2">
                 <button
                   onClick={() => handleLogActivity(habit.id)}
