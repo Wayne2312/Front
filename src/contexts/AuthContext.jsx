@@ -19,6 +19,7 @@ export const AuthProvider = ({ children }) => {
       delete axios.defaults.headers.common["Authorization"];
       setUser(null);
       localStorage.removeItem("user");
+      setError("Please log in to continue");
     }
   }, [token]);
 
@@ -34,11 +35,7 @@ export const AuthProvider = ({ children }) => {
       console.error("AuthContext: Token verification failed:", err.response?.data || err.message);
       if (err.response?.status === 401 || err.response?.status === 403) {
         console.log("AuthContext: Unauthorized, logging out");
-        setToken(null);
-        setUser(null);
-        localStorage.removeItem("token");
-        localStorage.removeItem("user");
-        setError("Session expired, please log in again");
+        logout();
       }
     }
   };
@@ -53,7 +50,9 @@ export const AuthProvider = ({ children }) => {
       setUser({ username, email });
       localStorage.setItem("token", token);
       localStorage.setItem("user", JSON.stringify({ username, email }));
+      axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
       setError("");
+      return { username, email };
     } catch (err) {
       const message = err.response?.data?.message || "Login failed";
       console.error("AuthContext: Login error:", err.response?.data || err.message);
@@ -66,13 +65,15 @@ export const AuthProvider = ({ children }) => {
     try {
       console.log("AuthContext: Registering user:", username);
       const response = await axios.post(`${import.meta.env.VITE_API_URL}/register`, { username, email, password });
-      const { token, message } = response.data;
+      const { token } = response.data;
       console.log("AuthContext: Registration successful, token:", token);
       setToken(token);
       setUser({ username, email });
       localStorage.setItem("token", token);
       localStorage.setItem("user", JSON.stringify({ username, email }));
+      axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
       setError("");
+      return { username, email };
     } catch (err) {
       const message = err.response?.data?.message || "Registration failed";
       console.error("AuthContext: Registration error:", err.response?.data || err.message);
