@@ -23,19 +23,45 @@ export const AuthProvider = ({ children }) => {
     }
   }, [token]);
 
-  const verifyToken = async () => {
-    try {
-      console.log("AuthContext: Verifying token with GET /api/habits");
-      await axios.get(`${import.meta.env.VITE_API_URL}/habits`, {
-        headers: { Authorization: `Bearer ${token}` },
+  // Log all outgoing requests
+  axios.interceptors.request.use(
+    (config) => {
+      console.log("AuthContext: Outgoing request:", {
+        url: config.url,
+        headers: config.headers,
       });
-      console.log("AuthContext: Token verified successfully");
-      setError("");
-    } catch (err) {
-      console.error("AuthContext: Token verification failed:", err.response?.data || err.message);
-      if (err.response?.status === 401 || err.response?.status === 403) {
-        console.log("AuthContext: Unauthorized, logging out");
-        logout();
+      return config;
+    },
+    (error) => {
+      console.error("AuthContext: Request interceptor error:", error);
+      return Promise.reject(error);
+    }
+  );
+
+  const verifyToken = async () => {
+    let retries = 3;
+    while (retries > 0) {
+      try {
+        console.log("AuthContext: Verifying token with GET /api/habits, attempt:", 4 - retries);
+        await axios.get(`${import.meta.env.VITE_API_URL}/habits`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        console.log("AuthContext: Token verified successfully");
+        setError("");
+        return;
+      } catch (err) {
+        console.error("AuthContext: Token verification failed:", err.response?.data || err.message);
+        if (err.response?.status === 401 || err.response?.status === 403) {
+          console.log("AuthContext: Unauthorized, logging out");
+          logout();
+          return;
+        }
+        retries--;
+        if (retries === 0) {
+          setError("Failed to verify session, please log in again");
+          logout();
+        }
+        await new Promise((resolve) => setTimeout(resolve, 1000));
       }
     }
   };
