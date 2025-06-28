@@ -9,11 +9,13 @@ export const AuthProvider = ({ children }) => {
   const [error, setError] = useState("");
 
   useEffect(() => {
+    console.log("AuthContext: Token state:", token);
     if (token) {
+      console.log("AuthContext: Setting axios Authorization header with token:", token);
       axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
-      // Verify token validity
       verifyToken();
     } else {
+      console.log("AuthContext: No token, removing Authorization header");
       delete axios.defaults.headers.common["Authorization"];
       setUser(null);
       localStorage.removeItem("user");
@@ -22,14 +24,16 @@ export const AuthProvider = ({ children }) => {
 
   const verifyToken = async () => {
     try {
-      // Use a lightweight endpoint to verify token (e.g., fetch user habits)
+      console.log("AuthContext: Verifying token with GET /api/habits");
       await axios.get(`${import.meta.env.VITE_API_URL}/habits`, {
         headers: { Authorization: `Bearer ${token}` },
       });
+      console.log("AuthContext: Token verified successfully");
       setError("");
     } catch (err) {
-      const message = err.response?.data?.message || "Invalid token";
+      console.error("AuthContext: Token verification failed:", err.response?.data || err.message);
       if (err.response?.status === 401 || err.response?.status === 403) {
+        console.log("AuthContext: Unauthorized, logging out");
         setToken(null);
         setUser(null);
         localStorage.removeItem("token");
@@ -41,8 +45,10 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (identifier, password) => {
     try {
+      console.log("AuthContext: Logging in with identifier:", identifier);
       const response = await axios.post(`${import.meta.env.VITE_API_URL}/login`, { identifier, password });
       const { token, username, email } = response.data;
+      console.log("AuthContext: Login successful, token:", token);
       setToken(token);
       setUser({ username, email });
       localStorage.setItem("token", token);
@@ -50,6 +56,7 @@ export const AuthProvider = ({ children }) => {
       setError("");
     } catch (err) {
       const message = err.response?.data?.message || "Login failed";
+      console.error("AuthContext: Login error:", err.response?.data || err.message);
       setError(message);
       throw new Error(message);
     }
@@ -57,8 +64,10 @@ export const AuthProvider = ({ children }) => {
 
   const register = async (username, email, password) => {
     try {
+      console.log("AuthContext: Registering user:", username);
       const response = await axios.post(`${import.meta.env.VITE_API_URL}/register`, { username, email, password });
       const { token } = response.data;
+      console.log("AuthContext: Registration successful, token:", token);
       setToken(token);
       setUser({ username, email });
       localStorage.setItem("token", token);
@@ -66,12 +75,14 @@ export const AuthProvider = ({ children }) => {
       setError("");
     } catch (err) {
       const message = err.response?.data?.message || "Registration failed";
+      console.error("AuthContext: Registration error:", err.response?.data || err.message);
       setError(message);
       throw new Error(message);
     }
   };
 
   const logout = () => {
+    console.log("AuthContext: Logging out user");
     setToken(null);
     setUser(null);
     setError("");
