@@ -44,7 +44,6 @@ const Analysis = () => {
       if (err.response?.status === 401 || err.response?.status === 403) {
         console.log("Analysis: Unauthorized, logging out");
         logout();
-        navigate("/login");
       }
     } finally {
       setLoading(false);
@@ -78,36 +77,36 @@ const Analysis = () => {
       {(error || authError) && (
         <p className="text-red-500 mb-4 text-center">{error || authError}</p>
       )}
-      {loading && <p className="text-center text-warm-gray">Loading...</p>}
+      {loading && <p className="text-center text-gray-500">Loading...</p>}
       <div className="flex justify-end mb-4 gap-4">
-        <Link to="/dashboard" className="btn-primary px-4 py-2 rounded-lg">
+        <Link to="/dashboard" className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600">
           Back to Dashboard
         </Link>
-        <button onClick={logout} className="btn-primary px-4 py-2 rounded-lg">
+        <button onClick={logout} className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600">
           Logout
         </button>
       </div>
       {analysis.habits.length === 0 && !error && !loading && (
-        <p className="text-warm-gray text-center">No habits to analyze. Create some habits first!</p>
+        <p className="text-gray-500 text-center">No habits to analyze. Create some habits first!</p>
       )}
       {analysis.habits.length > 0 && (
         <>
-          <div className="card mb-8">
+          <div className="bg-white shadow-md rounded-lg p-6 mb-8">
             <h3 className="text-xl mb-4">Habit Statistics</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {analysis.habits.map((habit) => (
-                <div key={habit.id} className="card">
-                  <h4 className="text-lg mb-2">{habit.name}</h4>
-                  <p className="text-warm-gray">Frequency: {habit.frequency}</p>
-                  <p className="text-warm-gray">Total Activities: {habit.total_activities}</p>
-                  <p className="text-warm-gray">
+                <div key={habit.id} className="bg-gray-50 p-4 rounded-lg">
+                  <h4 className="text-lg font-semibold mb-2">{habit.name}</h4>
+                  <p className="text-gray-500">Frequency: {habit.frequency}</p>
+                  <p className="text-gray-500">Total Activities: {habit.total_activities}</p>
+                  <p className="text-gray-500">
                     Completion Rate: {(habit.completion_rate * 100).toFixed(1)}%
                   </p>
                 </div>
               ))}
             </div>
           </div>
-          <div className="card">
+          <div className="bg-white shadow-md rounded-lg p-6">
             <h3 className="text-xl mb-4">Activity Trends</h3>
             <Bar data={chartData} options={chartOptions} />
           </div>
