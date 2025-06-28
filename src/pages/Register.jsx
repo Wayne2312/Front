@@ -1,87 +1,77 @@
 import { useState, useContext } from "react";
-import { useNavigate, Link } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
+import { Link, useNavigate } from "react-router-dom";
 import AuthContext from "../contexts/AuthContext";
 
 const Register = () => {
+  const { register, error: authError } = useContext(AuthContext);
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
-  const { register } = useContext(AuthContext);
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
       await register(username, email, password);
-      navigate("/");
+      navigate("/dashboard");
     } catch (err) {
-      setError(err.response?.data?.message || "Registration failed");
+      setError(err.message);
     }
   };
 
   return (
-    <section className="container mx-auto p-4 max-w-md">
+    <section className="container mx-auto p-4">
       <Helmet>
         <title>Register - Personal Habit Tracker</title>
-        <meta name="description" content="Create an account with Personal Habit Tracker to start building and tracking your habits." />
+        <meta name="description" content="Create an account to track your habits." />
       </Helmet>
       <h2 className="text-3xl font-bold mb-6 text-center">Register</h2>
-      {error && <p className="text-red-500 mb-4 text-center">{error}</p>}
-      <div className="card">
-        <div className="mb-4">
-          <label htmlFor="username" className="block mb-2 font-medium">Username</label>
-          <input
-            id="username"
-            type="text"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            className="w-full p-3 border rounded-lg bg-warm-beige"
-            required
-            aria-describedby="username-error"
-          />
-        </div>
-        <div className="mb-4">
-          <label htmlFor="email" className="block mb-2 font-medium">Email</label>
-          <input
-            id="email"
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className="w-full p-3 border rounded-lg bg-warm-beige"
-            required
-            aria-describedby="email-error"
-          />
-        </div>
-        <div className="mb-6">
-          <label htmlFor="password" className="block mb-2 font-medium">Password</label>
-          <input
-            id="password"
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className="w-full p-3 border rounded-lg bg-warm-beige"
-            required
-            aria-describedby="password-error"
-          />
-        </div>
-        <button
-          onClick={handleSubmit}
-          className="btn-primary w-full"
-          aria-label="Register a new account"
-        >
-          Register
-        </button>
-        <p className="mt-4 text-center text-warm-gray">
-          Already have an account?{" "}
-          <Link
-            to="/login"
-            className="text-soft-orange hover:underline"
-            aria-label="Navigate to login page"
+      {(error || authError) && (
+        <p className="text-red-500 mb-4 text-center">{error || authError}</p>
+      )}
+      <div className="bg-white shadow-md rounded-lg p-6 max-w-md mx-auto">
+        <form onSubmit={handleSubmit}>
+          <div className="mb-4">
+            <label className="block text-gray-700 mb-2">Username</label>
+            <input
+              type="text"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              className="w-full p-3 border rounded-lg bg-gray-50"
+              placeholder="Enter username"
+            />
+          </div>
+          <div className="mb-4">
+            <label className="block text-gray-700 mb-2">Email</label>
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="w-full p-3 border rounded-lg bg-gray-50"
+              placeholder="Enter email"
+            />
+          </div>
+          <div className="mb-4">
+            <label className="block text-gray-700 mb-2">Password</label>
+            <input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="w-full p-3 border rounded-lg bg-gray-50"
+              placeholder="Enter password"
+            />
+          </div>
+          <button
+            type="submit"
+            className="w-full bg-blue-500 text-white p-3 rounded-lg hover:bg-blue-600"
           >
-            Log in
-          </Link>
+            Register
+          </button>
+        </form>
+        <p className="mt-4 text-center">
+          Already have an account? <Link to="/login" className="text-blue-500 hover:underline">Login</Link>
         </p>
       </div>
     </section>
