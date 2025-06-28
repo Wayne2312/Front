@@ -1,26 +1,26 @@
-import { useState, useEffect, useContext } from "react";
-import { Helmet } from "react-helmet-async";
-import { Link, useNavigate } from "react-router-dom";
-import axios from "axios";
-import AuthContext from "../contexts/AuthContext";
-import { Bar } from "react-chartjs-2";
-import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend } from "chart.js";
+import { useState, useEffect, useContext } from 'react';
+import { Helmet } from 'react-helmet-async';
+import { Link, useNavigate } from 'react-router-dom';
+import axios from 'axios';
+import AuthContext from '../contexts/AuthContext';
+import { Bar } from 'react-chartjs-2';
+import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend } from 'chart.js';
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
 const Analysis = () => {
   const { user, token, error: authError, logout, verifyToken } = useContext(AuthContext);
   const [analysis, setAnalysis] = useState({ habits: [], trends: { labels: [], data: {} } });
-  const [error, setError] = useState("");
+  const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
-    console.log("Analysis: User:", user, "Token:", token);
+    console.log('Analysis: User:', user, 'Token:', token);
     if (!user || !token) {
-      console.log("Analysis: No user or token, redirecting to login");
-      setError("Please log in to view analysis");
-      navigate("/login");
+      console.log('Analysis: No user or token, redirecting to login');
+      setError('Please log in to view analysis');
+      navigate('/login');
       return;
     }
     verifyToken(navigate);
@@ -30,19 +30,18 @@ const Analysis = () => {
   const fetchAnalysis = async () => {
     setLoading(true);
     try {
-      console.log("Analysis: Sending GET /api/habits/analysis with token:", token);
+      console.log('Analysis: Fetching analysis');
       const response = await axios.get(`${import.meta.env.VITE_API_URL}/habits/analysis`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      console.log("Analysis: Analysis fetched:", response.data);
+      console.log('Analysis: Analysis fetched:', response.data);
       setAnalysis(response.data);
-      setError("");
+      setError('');
     } catch (err) {
-      const message = err.response?.data?.message || "Failed to fetch analysis";
-      console.error("Analysis: Fetch analysis error:", err.response?.data || err.message);
+      const message = err.response?.data?.message || 'Failed to fetch analysis';
+      console.error('Analysis: Fetch error:', err.response?.data || err.message);
       setError(message);
       if (err.response?.status === 401 || err.response?.status === 403) {
-        console.log("Analysis: Unauthorized, logging out");
         logout(navigate);
       }
     } finally {
@@ -62,15 +61,15 @@ const Analysis = () => {
   const chartOptions = {
     responsive: true,
     plugins: {
-      legend: { position: "top" },
-      title: { display: true, text: "Habit Activity Over Last 30 Days" },
+      legend: { position: 'top' },
+      title: { display: true, text: 'Habit Activity Over Last 30 Days' },
     },
   };
 
   return (
     <section className="container mx-auto p-4">
       <Helmet>
-        <title>Analysis - Personal Habit Tracker</title>
+        <title>Analysis - Habit Tracker</title>
         <meta name="description" content="View your habit trends and statistics." />
       </Helmet>
       <h2 className="text-3xl font-bold mb-6 text-center">Habit Analysis</h2>
