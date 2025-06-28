@@ -11,7 +11,7 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     console.log("AuthContext: Token state:", token);
     if (token) {
-      console.log("AuthContext: Setting axios Authorization header with token:", token);
+      console.log("AuthContext: Setting axios Authorization header:", `Bearer ${token}`);
       axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
       verifyToken();
     } else {
@@ -66,7 +66,7 @@ export const AuthProvider = ({ children }) => {
     try {
       console.log("AuthContext: Registering user:", username);
       const response = await axios.post(`${import.meta.env.VITE_API_URL}/register`, { username, email, password });
-      const { token } = response.data;
+      const { token, message } = response.data;
       console.log("AuthContext: Registration successful, token:", token);
       setToken(token);
       setUser({ username, email });
