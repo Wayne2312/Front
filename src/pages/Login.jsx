@@ -13,8 +13,7 @@ const Login = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      await login(identifier, password);
-      navigate("/dashboard");
+      await login(identifier, password, navigate);
     } catch (err) {
       setError(err.message);
     }
