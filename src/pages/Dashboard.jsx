@@ -42,7 +42,6 @@ const Dashboard = () => {
       if (err.response?.status === 401 || err.response?.status === 403) {
         console.log("Dashboard: Unauthorized, logging out");
         logout();
-        navigate("/login");
       }
     } finally {
       setLoading(false);
@@ -76,7 +75,6 @@ const Dashboard = () => {
       if (err.response?.status === 401 || err.response?.status === 403) {
         console.log("Dashboard: Unauthorized, logging out");
         logout();
-        navigate("/login");
       }
     } finally {
       setLoading(false);
@@ -95,16 +93,16 @@ const Dashboard = () => {
       {(error || authError) && (
         <p className="text-red-500 mb-4 text-center">{error || authError}</p>
       )}
-      {loading && <p className="text-center text-warm-gray">Loading...</p>}
+      {loading && <p className="text-center text-gray-500">Loading...</p>}
       <div className="flex justify-end mb-4 gap-4">
-        <Link to="/analysis" className="btn-primary px-4 py-2 rounded-lg">
+        <Link to="/analysis" className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600">
           View Analysis
         </Link>
-        <button onClick={logout} className="btn-primary px-4 py-2 rounded-lg">
+        <button onClick={logout} className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600">
           Logout
         </button>
       </div>
-      <div className="card mb-8">
+      <div className="bg-white shadow-md rounded-lg p-6 mb-8">
         <h3 className="text-xl mb-4">Create New Habit</h3>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <input
@@ -112,19 +110,19 @@ const Dashboard = () => {
             placeholder="Habit Name"
             value={newHabit.name}
             onChange={(e) => setNewHabit({ ...newHabit, name: e.target.value })}
-            className="p-3 border rounded-lg bg-warm-beige"
+            className="p-3 border rounded-lg bg-gray-50"
           />
           <input
             type="text"
             placeholder="Description"
             value={newHabit.description}
             onChange={(e) => setNewHabit({ ...newHabit, description: e.target.value })}
-            className="p-3 border rounded-lg bg-warm-beige"
+            className="p-3 border rounded-lg bg-gray-50"
           />
           <select
             value={newHabit.frequency}
             onChange={(e) => setNewHabit({ ...newHabit, frequency: e.target.value })}
-            className="p-3 border rounded-lg bg-warm-beige"
+            className="p-3 border rounded-lg bg-gray-50"
           >
             <option value="daily">Daily</option>
             <option value="weekly">Weekly</option>
@@ -132,7 +130,7 @@ const Dashboard = () => {
         </div>
         <button
           onClick={handleCreateHabit}
-          className="btn-primary mt-4 w-full md:w-auto"
+          className="bg-green-500 text-white mt-4 px-4 py-2 rounded-lg hover:bg-green-600"
           disabled={loading}
         >
           Create Habit
@@ -140,23 +138,23 @@ const Dashboard = () => {
       </div>
       <h3 className="text-2xl mb-4">Your Habits</h3>
       {habits.length === 0 && !error && !loading && (
-        <p className="text-warm-gray text-center">No habits yet. Create one above!</p>
+        <p className="text-gray-500 text-center">No habits yet. Create one above!</p>
       )}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         <AnimatePresence>
           {habits.map((habit) => (
             <motion.article
               key={habit.id}
-              className="card"
+              className="bg-white shadow-md rounded-lg p-4"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: 20 }}
               transition={{ duration: 0.3 }}
             >
-              <h4 className="text-lg mb-2">{habit.name}</h4>
-              <p className="text-warm-gray mb-2">{habit.description || "No description"}</p>
-              <p className="text-warm-gray mb-2">Frequency: {habit.frequency}</p>
-              <p className="text-soft-orange font-bold mb-4">Streak: {habit.streak || 0}</p>
+              <h4 className="text-lg font-semibold mb-2">{habit.name}</h4>
+              <p className="text-gray-500 mb-2">{habit.description || "No description"}</p>
+              <p className="text-gray-500 mb-2">Frequency: {habit.frequency}</p>
+              <p className="text-orange-500 font-bold mb-4">Streak: {habit.streak || 0}</p>
             </motion.article>
           ))}
         </AnimatePresence>
