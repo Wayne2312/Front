@@ -1,48 +1,49 @@
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import { HelmetProvider } from "react-helmet-async";
-import { AuthProvider } from "./contexts/AuthContext";
-import PrivateRoute from "./components/PrivateRoute";
-import Login from "./pages/Login";
-import Register from "./pages/Register";
-import Dashboard from "./pages/Dashboard";
-import Analysis from "./pages/Analysis";
-import Navbar from "./components/Navbar";
-import "./index.css";
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { AuthProvider } from './contexts/AuthContext';
+import Dashboard from './pages/Dashboard';
+import Analysis from './pages/Analysis';
+import Login from './pages/Login';
+import Register from './pages/Register';
+import { Component } from 'react';
+
+class ErrorBoundary extends Component {
+  state = { error: null };
+
+  static getDerivedStateFromError(error) {
+    console.error('ErrorBoundary: Caught error:', error);
+    return { error };
+  }
+
+  render() {
+    if (this.state.error) {
+      return (
+        <div className="container mx-auto p-4 text-red-500 text-center">
+          <h1>Error: {this.state.error.message}</h1>
+          <p>Please refresh or contact support.</p>
+        </div>
+      );
+    }
+    console.log('ErrorBoundary: Rendering children');
+    return this.props.children;
+  }
+}
 
 function App() {
+  console.log('App: Rendering');
   return (
-    <HelmetProvider>
+    <ErrorBoundary>
       <AuthProvider>
         <Router>
-          <div className="min-h-screen bg-warm-beige font-sans">
-            <Navbar />
-            <main>
-              <Routes>
-                <Route path="/login" element={<Login />} />
-                <Route path="/register" element={<Register />} />
-                <Route path="/" element={<Register />} /> {/* Set Register as default */}
-                <Route
-                  path="/dashboard"
-                  element={
-                    <PrivateRoute>
-                      <Dashboard />
-                    </PrivateRoute>
-                  }
-                />
-                <Route
-                  path="/analysis"
-                  element={
-                    <PrivateRoute>
-                      <Analysis />
-                    </PrivateRoute>
-                  }
-                />
-              </Routes>
-            </main>
-          </div>
+          <Routes>
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
+            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/analysis" element={<Analysis />} />
+            <Route path="/" element={<Login />} />
+          </Routes>
         </Router>
       </AuthProvider>
-    </HelmetProvider>
+    </ErrorBoundary>
   );
 }
 
