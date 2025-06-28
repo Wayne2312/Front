@@ -1,14 +1,14 @@
-import { useState, useContext } from "react";
-import { Helmet } from "react-helmet-async";
-import { Link, useNavigate } from "react-router-dom";
-import AuthContext from "../contexts/AuthContext";
+import { useState, useContext } from 'react';
+import { Helmet } from 'react-helmet-async';
+import { Link, useNavigate } from 'react-router-dom';
+import AuthContext from '../contexts/AuthContext';
 
 const Register = () => {
   const { register, error: authError } = useContext(AuthContext);
-  const [username, setUsername] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
+  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
@@ -23,7 +23,7 @@ const Register = () => {
   return (
     <section className="container mx-auto p-4">
       <Helmet>
-        <title>Register - Personal Habit Tracker</title>
+        <title>Register - Habit Tracker</title>
         <meta name="description" content="Create an account to track your habits." />
       </Helmet>
       <h2 className="text-3xl font-bold mb-6 text-center">Register</h2>
