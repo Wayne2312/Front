@@ -40,7 +40,7 @@ function Dashboard({ user }) {
     }
     try {
       const response = await axios.post(
-        `${import.meta.env.VITE_API_URL}/habits`,
+        `${import.meta.env.VITE_API_URL}/api/habits`,
         newHabit,
         getAuthHeader()
       );
