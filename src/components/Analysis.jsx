@@ -19,7 +19,7 @@ function Analysis() {
         }
 
         const response = await axios.get(
-          `${import.meta.env.VITE_API_URL}/api/habits/analysis`, 
+          `${import.meta.env.VITE_API_URL}/habits/analysis`, 
           {
             headers: { 
               'Authorization': `Bearer ${token}`,
