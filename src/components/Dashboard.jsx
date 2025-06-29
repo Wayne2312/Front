@@ -8,15 +8,22 @@ function Dashboard({ user }) {
   const [newHabit, setNewHabit] = useState({ name: '', description: '', frequency: 'daily' });
   const [editingHabit, setEditingHabit] = useState(null);
 
+  const getAuthHeader = () => ({
+    headers: { 
+      Authorization: `Bearer ${localStorage.getItem('authToken')}` 
+    }
+  });
+
   const fetchHabits = async () => {
     try {
-      const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/habits`, {
-        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
-      });
+      const response = await axios.get(
+        `${import.meta.env.VITE_API_URL}/api/habits`,
+        getAuthHeader()
+      );
       setHabits(response.data);
-      setLoading(false);
     } catch (err) {
-      setError('Failed to fetch habits');
+      setError(err.response?.data?.message || 'Failed to fetch habits');
+    } finally {
       setLoading(false);
     }
   };
@@ -27,51 +34,67 @@ function Dashboard({ user }) {
 
   const addHabit = async (e) => {
     e.preventDefault();
-    if (!newHabit.name.trim()) return;
+    if (!newHabit.name.trim()) {
+      setError('Habit name is required');
+      return;
+    }
     try {
-      const response = await axios.post(`${import.meta.env.VITE_API_URL}/api/habits`, newHabit, {
-        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
-      });
-      setHabits([...habits, { ...newHabit, id: response.data.id, streak: 0 }]);
+      const response = await axios.post(
+        `${import.meta.env.VITE_API_URL}/api/habits`,
+        newHabit,
+        getAuthHeader()
+      );
+      setHabits([...habits, response.data]);
       setNewHabit({ name: '', description: '', frequency: 'daily' });
+      setError('');
     } catch (err) {
-      setError('Failed to add habit');
+      setError(err.response?.data?.message || 'Failed to add habit');
     }
   };
 
-  const updateHabit = async (id, updatedHabit) => {
+  const updateHabit = async () => {
+    if (!editingHabit) return;
     try {
-      await axios.put(`${import.meta.env.VITE_API_URL}/api/habits/${id}`, updatedHabit, {
-        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
-      });
-      setHabits(habits.map(habit => habit.id === id ? { ...habit, ...updatedHabit } : habit));
+      const { id, ...habitData } = editingHabit;
+      await axios.put(
+        `${import.meta.env.VITE_API_URL}/api/habits/${id}`,
+        habitData,
+        getAuthHeader()
+      );
+      setHabits(habits.map(h => 
+        h.id === id ? { ...h, ...habitData } : h
+      ));
       setEditingHabit(null);
     } catch (err) {
-      setError('Failed to update habit');
+      setError(err.response?.data?.message || 'Failed to update habit');
     }
   };
 
   const deleteHabit = async (id) => {
     try {
-      await axios.delete(`${import.meta.env.VITE_API_URL}/api/habits/${id}`, {
-        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
-      });
-      setHabits(habits.filter(habit => habit.id !== id));
+      await axios.delete(
+        `${import.meta.env.VITE_API_URL}/api/habits/${id}`,
+        getAuthHeader()
+      );
+      setHabits(habits.filter(h => h.id !== id));
     } catch (err) {
-      setError('Failed to delete habit');
+      setError(err.response?.data?.message || 'Failed to delete habit');
     }
   };
 
   const logActivity = async (id) => {
     try {
-      const response = await axios.post(`${import.meta.env.VITE_API_URL}/api/habits/${id}/log`, {}, {
-        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
-      });
-      setHabits(habits.map(habit => 
-        habit.id === id ? { ...habit, streak: response.data.streak } : habit
+      const response = await axios.post(
+        `${import.meta.env.VITE_API_URL}/api/habits/${id}/log`,
+        {},
+        getAuthHeader()
+      );
+      
+      setHabits(habits.map(h => 
+        h.id === id ? { ...h, streak: response.data.streak } : h
       ));
     } catch (err) {
-      setError('Failed to log activity');
+      setError(err.response?.data?.message || 'Failed to log activity');
     }
   };
 
