@@ -1,49 +1,61 @@
+import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import { AuthProvider } from './contexts/AuthContext';
-import Dashboard from './pages/Dashboard';
-import Analysis from './pages/Analysis';
-import Login from './pages/Login';
-import Register from './pages/Register';
-import { Component } from 'react';
-
-class ErrorBoundary extends Component {
-  state = { error: null };
-
-  static getDerivedStateFromError(error) {
-    console.error('ErrorBoundary: Caught error:', error);
-    return { error };
-  }
-
-  render() {
-    if (this.state.error) {
-      return (
-        <div className="container mx-auto p-4 text-red-500 text-center">
-          <h1>Error: {this.state.error.message}</h1>
-          <p>Please refresh or contact support.</p>
-        </div>
-      );
-    }
-    console.log('ErrorBoundary: Rendering children');
-    return this.props.children;
-  }
-}
+// main.jsx / App.jsx
+import './index.css'; // Path to your Tailwind CSS file
+import Login from './components/Login';
+import Register from './components/Register';
+import Dashboard from './components/Dashboard';
+import Analysis from './components/Analysis';
+import Navbar from './components/Navbar';
+import axios from 'axios';
 
 function App() {
-  console.log('App: Rendering');
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [user, setUser] = useState(null);
+
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      axios.get(`${import.meta.env.VITE_API_URL}/api/habits`, {
+        headers: { Authorization: `Bearer ${token}` }
+      })
+      .then(() => setIsLoggedIn(true))
+      .catch(() => {
+        localStorage.removeItem('token');
+        setIsLoggedIn(false);
+      });
+    }
+  }, []);
+
+  const handleLogin = (userData, token) => {
+    localStorage.setItem('token', token);
+    setUser(userData);
+    setIsLoggedIn(true);
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    setUser(null);
+    setIsLoggedIn(false);
+  };
+
   return (
-    <ErrorBoundary>
-      <AuthProvider>
-        <Router>
-          <Routes>
-            <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Register />} />
-            <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/analysis" element={<Analysis />} />
-            <Route path="/" element={<Login />} />
-          </Routes>
-        </Router>
-      </AuthProvider>
-    </ErrorBoundary>
+    <Router>
+      <div className="min-h-screen bg-gray-100">
+        <Navbar isLoggedIn={isLoggedIn} onLogout={handleLogout} />
+        <Routes>
+          <Route path="/" element={
+            isLoggedIn ? (
+              <Dashboard user={user} />
+            ) : (
+              <Login onLogin={handleLogin} />
+            )
+          } />
+          <Route path="/register" element={<Register onLogin={handleLogin} />} />
+          <Route path="/analysis" element={isLoggedIn ? <Analysis /> : <Login onLogin={handleLogin} />} />
+        </Routes>
+      </div>
+    </Router>
   );
 }
 
