@@ -40,7 +40,7 @@ function Register({ onLogin }) {
 
     try {
       const response = await axios.post(
-        `${import.meta.env.VITE_API_URL}/auth/register`,
+        `${import.meta.env.VITE_API_URL}/api/register`,
         {
           username: formData.username.trim(),
           email: formData.email.trim(),
