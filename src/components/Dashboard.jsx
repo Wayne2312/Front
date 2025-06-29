@@ -17,7 +17,7 @@ function Dashboard({ user }) {
   const fetchHabits = async () => {
     try {
       const response = await axios.get(
-        `${import.meta.env.VITE_API_URL}/api/habits`,
+        `${import.meta.env.VITE_API_URL}/habits`,
         getAuthHeader()
       );
       setHabits(response.data);
@@ -40,7 +40,7 @@ function Dashboard({ user }) {
     }
     try {
       const response = await axios.post(
-        `${import.meta.env.VITE_API_URL}/api/habits`,
+        `${import.meta.env.VITE_API_URL}/habits`,
         newHabit,
         getAuthHeader()
       );
@@ -57,7 +57,7 @@ function Dashboard({ user }) {
     try {
       const { id, ...habitData } = editingHabit;
       await axios.put(
-        `${import.meta.env.VITE_API_URL}/api/habits/${id}`,
+        `${import.meta.env.VITE_API_URL}/habits/${id}`,
         habitData,
         getAuthHeader()
       );
@@ -73,7 +73,7 @@ function Dashboard({ user }) {
   const deleteHabit = async (id) => {
     try {
       await axios.delete(
-        `${import.meta.env.VITE_API_URL}/api/habits/${id}`,
+        `${import.meta.env.VITE_API_URL}/habits/${id}`,
         getAuthHeader()
       );
       setHabits(habits.filter(h => h.id !== id));
@@ -85,7 +85,7 @@ function Dashboard({ user }) {
   const logActivity = async (id) => {
     try {
       const response = await axios.post(
-        `${import.meta.env.VITE_API_URL}/api/habits/${id}/log`,
+        `${import.meta.env.VITE_API_URL}/habits/${id}/log`,
         {},
         getAuthHeader()
       );
